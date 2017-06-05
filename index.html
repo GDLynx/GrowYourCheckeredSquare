@@ -1,0 +1,327 @@
+<html> 
+	<head> 
+		
+		<title> 
+			Grow Your Checkered Square	
+		</title> 
+		
+		<!-- JQUERRY CDN VERSION: -->
+		<script type = "text/javascript" 
+        src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+		<!--
+		<script src = "functionallity.js"></script> 
+		--> 
+	
+		<canvas id="Game" style="background-color:yellow; z-index:1;" width="400" height="400"> </canvas> 
+		<script type="text/javascript"> 
+			
+			var canvas, ctx; 
+			
+			$(document).ready(function() { 
+				canvas = document.getElementById("Game"); 
+				ctx = canvas.getContext("2d"); 
+			
+				var size = 6; 
+				var color0 = "white"; 
+				var color1 = "black"; 
+				var alive = true; 
+				var sizeTimer = 0; 
+				var sizeDiedAt; 
+				
+				/// Graphics / Art 
+				function characterOne() { 
+					
+					/* 
+					var size = 2; 
+					var color0 = "white"; 
+					var color1 = "black"; 
+					*/ 
+					
+					/* Note:
+					Originally I planned on using a "for-loop" to draw the 
+					individual pixels of the character/s, but for simplicity; 
+					decided to instead use two functions - this may change
+					*/ 
+					
+					if (!alive) { 
+						ctx.fillStyle = "black";
+						ctx.fillText("Your Checkered Square died,", 6, 100);
+						ctx.fillText("please restart (refresh the page) the game", 26, 115); 
+						ctx.fillText("to play again.", 46, 130); 	
+ 
+						color0 = "red"; 
+						color1 = "red"; 
+						size = sizeDiedAt;
+						x = width / 2; 
+					} 
+					if (alive && size < 70 && sizeTimer > 120) { 
+						sizeDiedAt = size; 
+						size += 1;  
+						sizeTimer = 0; 
+					}
+					sizeTimer++;
+					
+					if (size <= 50) { 
+						y = groundLine + 40 
+					} else { 
+						y = groundLine - 10; 
+					}
+						
+					function drawWhiteSquares() { 
+						ctx.beginPath(); 
+						ctx.rect(x, y, size, size); 
+						ctx.rect(x+size, y-size, size, size); 
+						ctx.fillStyle = color0; 
+						ctx.fill(); 
+						ctx.closePath(); 
+					}
+					function drawBlackSquares() { 
+						ctx.beginPath(); 
+						ctx.rect(x+size, y, size, size); 
+						ctx.rect(x, y-size, size, size); 
+						ctx.fillStyle = color1; 
+						ctx.fill(); 
+						ctx.closePath(); 
+					}
+					
+					drawWhiteSquares(); 
+					drawBlackSquares(); 
+					
+				}
+				
+				/// Logic 
+				var width = height = 400; 
+			
+				// Pet Movement 
+				var groundLine = height/2;
+				
+				var x = width/2, y = height/2; 
+				var moveRight = true; 
+				 
+				var jumpTimer = 0; // Note: The pet can randomly change direction in mid-air which may look wrong, to prevent this movement / jumping may be modified. 
+				var canJump = false; 
+				var whenToJump = 100; 
+				
+				// Hunger 
+				var hunger_status = 100; 
+				// var inc_hunger = true; 
+				
+				// Attention 
+				var attention_status = 100; 
+				var inc_attention = true; 
+				
+				// Discipline 
+				var discipline_status; 
+				
+				/// Attention  
+				$("canvas").mouseover(function() {
+					inc_attention = true; 
+					// hunger_status += 1; 
+				}); 
+				$("canvas").mouseleave(function() {
+					inc_attention = false; 
+					// hunger_status -= 1;
+				}); 
+				
+				$("#Attention").click(function() {
+					attention_status += 6; 
+				}); 
+				
+				// Feeding 
+				$("#Feed").click(function() {
+					hunger_status += 10; 
+				}); 
+				
+				function drawGround() { 
+					ctx.beginPath(); 
+					ctx.rect(1, groundLine + 40, 400, 50); 
+					ctx.fillStyle = "green"; 
+					ctx.fill();
+					ctx.closePath(); 
+				} 
+				
+				function pet() {
+					
+					/* 
+					ctx.beginPath();
+					ctx.arc(x, y, 10, 0, Math.PI*2);
+					ctx.fillStyle = "red";
+					ctx.fill();
+					ctx.closePath();
+					*/ 
+					
+					// Left & Right Movement 
+					if (x > width - 40 && moveRight) {
+						moveRight = false; 
+					} else if (x < 0 + 40 && !moveRight) {
+						moveRight = true; 
+					} 
+					if (moveRight) { x+=0.4; } else { x-=0.4; } 
+					
+					// Jumping 
+					jumpTimer += 1; // + Math.random(); 
+					if (jumpTimer >= whenToJump) { 
+						canJump = true; 
+					} 
+					if (jumpTimer >= whenToJump + 15 && canJump) { 
+						canJump = false; 
+						jumpTimer = 0; 
+					} 
+					if (canJump) { 
+						y--; 
+					} else if (y < groundLine) { 
+						y++; 
+					} else { 
+						y = y; 
+					}
+				}
+			
+				function hunger() {
+				 
+					
+					ctx.beginPath(); 
+					ctx.rect(30, 30, 100, 20); 
+					ctx.fillStyle = "red"; 
+					ctx.fill(); 
+					ctx.closePath(); 
+					
+					ctx.beginPath(); 
+					ctx.rect(30, 30, hunger_status, 20); 
+					ctx.fillStyle = "green"; 
+					ctx.fill(); 
+					ctx.closePath(); 
+					
+					
+					ctx.font = "14px Georgia";
+					ctx.fillStyle = "black"; 
+					ctx.textBaseline = "top"; 
+					ctx.font = "14px Georgia";
+					ctx.fillText("Hunger", 30, 35); 
+					
+					
+					if (hunger_status < 1) {
+						// alert("Pet is dead"); 
+						alive = false; 
+					} 
+					
+					// Deplete hunger  
+					/*
+					if (inc_hunger) {
+						hunger_status += 0.1; 
+					} else {
+						hunger_status -= 0.01;
+					} 
+					*/ 
+						
+					if (attention_status < 50) { 
+						hunger_status -= 0.1; 
+					} else { 
+						hunger_status -= 0.01; 
+					} 
+					
+					if (hunger_status >= 100) { hunger_status = 100; } 
+						
+					if (hunger_status < 0) { hunger_status = -1; } 
+					
+				}
+				
+				function attention() {
+				
+	
+					ctx.beginPath(); 
+					ctx.rect(30, 52, 100, 20); 
+					ctx.fillStyle = "red"; 
+					ctx.fill(); 
+					ctx.closePath(); 
+					
+					ctx.beginPath(); 
+					ctx.rect(30, 52, attention_status, 20); 
+					ctx.fillStyle = "blue"; 
+					ctx.fill(); 
+					ctx.closePath(); 
+
+					ctx.font = "14px Georgia";
+					ctx.fillStyle = "black"; 
+					ctx.textBaseline = "top"; 
+					ctx.font = "14px Georgia";
+					ctx.fillText("Attention", 30, 55); 
+					
+					
+					// Deplete hunger  
+					if (inc_attention && attention_status <= 100 ) {
+						attention_status += 0.08; 
+					} else if (!inc_attention) { 
+						// if (discipline < 40) {
+						attention_status -= 0.06;
+					} 
+					
+					if (attention_status >= 100) { attention_status = 100; } 
+					
+					if (attention_status < 0) { attention_status = -1; } 
+					
+				}
+				
+				function main() {
+					
+					ctx.clearRect(0, 0, width, height); 
+					
+					pet(); 
+					drawGround(); 
+					
+					// Draw (a) Character 
+					characterOne(); 
+					
+					
+					hunger(); 
+					attention(); 
+			
+					ctx.font = "14px Georgia";
+					ctx.fillStyle = "black"; 
+					ctx.textBaseline = "top"; 
+					ctx.font = "20px Georgia";
+					ctx.fillText("GROW YOUR CHECKERED SQUARE", 40, 305); 
+					
+				/*
+					ctx.font = "64px Helvitica";
+					ctx.fillStyle = "black";
+					ctx.fillText("" + whenToJump, 64, 64);
+				*/
+				}
+				setInterval(main, 10); 
+			}); 
+				
+		</script> 
+	</head> 
+	<body> 
+		
+		
+		<!-- GUI --> 
+		<!-- 
+		<style> 
+			#GUI {
+				width:100px;
+				background-color:green;
+				bottm:-100px;
+				z-index: -1;
+				position: fixedl /* absolute; */ 
+				top:350px; 
+				display: inline-block; 
+			}
+		</style> 
+		<section id="GUI"> 
+			<h1 id="Feed"> Feed </h1> 
+			<h1 id="Play"> Play </h1> 
+		
+		</section> -->
+		<section id="GUI"> 
+			<h1 id="Feed" style="width:100px;background-color:green;bottm:-100px;z-index:0;position:absolute;top:350px;"> feed </h1> 
+			<h1 id="Attention" style="width:100px;background-color:blue;bottm:-100px;z-index:0;position:absolute;top:350px;left:110px;"> Play </h1>			
+			<!-- <h1 id="Play" style="width:100px;background-color:green;bottm:-100px;z-index:0;position:absolute;top:350px;;"> feed </h1> --> 
+		
+		</section> 
+		
+		
+		
+	</body> 
+</html> 
